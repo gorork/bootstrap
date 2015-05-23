@@ -119,14 +119,6 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
   };
 
   scope.$watch('isOpen', function( isOpen, wasOpen ) {
-    if ( appendToBody && self.dropdownMenu ) {
-      var pos = $position.positionElements(self.$element, self.dropdownMenu, 'bottom-left', true);
-      self.dropdownMenu.css({
-        top: pos.top + 'px',
-        left: pos.left + 'px',
-        display: isOpen ? 'block' : 'none'
-      });
-    }
 
     $animate[isOpen ? 'addClass' : 'removeClass'](self.$element, openClass);
 
@@ -161,7 +153,7 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
   };
 })
 
-.directive('dropdownMenu', function() {
+.directive('dropdownMenu', ['$window', '$position', function($window, $position) {
   return {
     restrict: 'AC',
     require: '?^dropdown',
@@ -170,9 +162,50 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
         return;
       }
       dropdownCtrl.dropdownMenu = element;
+
+      var dropdownMenu = element,
+          dropdown = element.parent(),
+          appendToBody = dropdown.attr('dropdown-append-to-body');
+
+      scope.$watch(dropdownCtrl.isOpen, function( isOpen ) {
+        if ( isOpen ) {
+
+          // Add invisible dropdownMenu to DOM to calculate its height
+          dropdownMenu.css({
+            visibility: 'hidden',
+            display:    'block'
+          });
+
+          var windowBottom = $window.innerHeight + $window.pageYOffset,
+              dropdownOffset = $position.offset(dropdown).top,
+              dropdownHeight = $position.position(dropdown).height,
+              dropdownMenuHeight = $position.position(dropdownMenu).height,
+              dropdownMenuBottom = dropdownOffset + dropdownHeight + dropdownMenuHeight;
+
+          if ( appendToBody !== undefined ) {
+            var pos = $position.positionElements(dropdown, dropdownMenu, 'bottom-left', true);
+            dropdownMenu.css({
+              top: dropdownMenuBottom > windowBottom ? dropdownOffset - dropdownMenuHeight - 3 + 'px' : pos.top + 'px',
+              left: pos.left + 'px'
+            });
+          } else {
+            dropdown[ dropdownMenuBottom > windowBottom ? 'addClass' : 'removeClass' ]( 'dropup' );
+          }
+
+          // Now, display dropdownMenu
+          dropdownMenu.css('visibility', 'visible');
+
+        } else {
+          // When dropdownMenu is closed, remove inline styling
+          dropdownMenu.css({
+            visibility: '',
+            display:    ''
+          });
+        }
+      });
     }
   };
-})
+}])
 
 .directive('dropdownToggle', function() {
   return {
