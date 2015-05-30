@@ -1,10 +1,10 @@
 describe('dropdownToggle', function() {
-  var $animate, $compile, $rootScope, $document, $templateCache, dropdownConfig, element, $browser, $log;
+  var $animate, $compile, $rootScope, $document, $window, $templateCache, dropdownConfig, element, $browser, $log;
 
   beforeEach(module('ngAnimateMock'));
   beforeEach(module('ui.bootstrap.dropdown'));
 
-  beforeEach(inject(function(_$animate_, _$compile_, _$rootScope_, _$document_, _$templateCache_, uibDropdownConfig, _$browser_, _$log_) {
+  beforeEach(inject(function(_$animate_, _$compile_, _$rootScope_, _$document_, _$window_, _$templateCache_, uibDropdownConfig, _$browser_, _$log_) {
     $animate = _$animate_;
     $compile = _$compile_;
     $rootScope = _$rootScope_;
@@ -13,6 +13,7 @@ describe('dropdownToggle', function() {
     dropdownConfig = uibDropdownConfig;
     $browser = _$browser_;
     $log = _$log_;
+    $window = _$window_;
   }));
 
   afterEach(function() {
@@ -489,6 +490,43 @@ describe('dropdownToggle', function() {
       expect(elm1.hasClass(dropdownConfig.openClass)).toBe(false);
       expect(elm2.hasClass(dropdownConfig.openClass)).toBe(true);
     });
+  });
+
+  describe('dropup', function() {
+    function dropdown() {
+      return $compile('<li dropdown style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu"><li><a href>Hello</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should add "dropup" class if dropdown menu is hidden by browser', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      expect(element.hasClass('dropup')).toBe(true);
+    });
+  });
+
+  describe('dropup for append-to-body', function() {
+    function dropdown() {
+      return $compile('<li dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should place menu above dropdown if it\'s too close to bottom of window', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      var windowBottom = $window.innerHeight + $window.pageYOffset,
+          menu = document.getElementById("dropdown-menu"),
+          menuOffet = parseInt(menu.style.top),
+          menuHeight = menu.getBoundingClientRect().bottom;
+      expect(menuOffet + menuHeight < windowBottom).toBe(true);
+    });
+  });
 
     it('should not close on $locationChangeSuccess if auto-close="disabled"', function() {
       var elm1 = dropdown('disabled');
@@ -691,12 +729,12 @@ describe('dropdownToggle', function() {
 describe('dropdown deprecation', function() {
   beforeEach(module('ngAnimateMock'));
   beforeEach(module('ui.bootstrap.dropdown'));
-  
+
   it('should suppress warning', function() {
     module(function($provide) {
       $provide.value('$dropdownSuppressWarning', true);
     });
-    
+
     inject(function($compile, $log, $rootScope) {
       spyOn($log, 'warn');
       var element = $compile('<li dropdown><a href dropdown-toggle></a><ul><li><a href>Hello</a></li></ul></li>')($rootScope);
@@ -704,7 +742,7 @@ describe('dropdown deprecation', function() {
       expect($log.warn.calls.count()).toBe(0);
     });
   });
-  
+
   it('should give warning by default', inject(function($compile, $log, $rootScope) {
     spyOn($log, 'warn');
     var element = $compile('<li dropdown><a href></a><ul><li><a href dropdown-toggle>Hello</a></li></ul></li>')($rootScope);
@@ -714,7 +752,7 @@ describe('dropdown deprecation', function() {
     expect($log.warn.calls.argsFor(1)).toEqual(['dropdown-toggle is now deprecated. Use uib-dropdown-toggle instead.']);
     expect($log.warn.calls.argsFor(2)).toEqual(['dropdown is now deprecated. Use uib-dropdown instead.']);
   }));
-  
+
   it('should give warning by default for keyboardNav', inject(function($compile, $log, $rootScope) {
     spyOn($log, 'warn');
     var element = $compile('<li dropdown keyboard-nav><a href ></a><ul><li><a href>Hello</a></li></ul></li>')($rootScope);
