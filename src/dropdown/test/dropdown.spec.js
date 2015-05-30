@@ -1,12 +1,13 @@
 describe('dropdownToggle', function() {
-  var $compile, $rootScope, $document, dropdownConfig, element;
+  var $compile, $rootScope, $document, $window, dropdownConfig, element;
 
   beforeEach(module('ui.bootstrap.dropdown'));
 
-  beforeEach(inject(function(_$compile_, _$rootScope_, _$document_, _dropdownConfig_) {
+  beforeEach(inject(function(_$compile_, _$rootScope_, _$document_, _$window_, _dropdownConfig_) {
     $compile = _$compile_;
     $rootScope = _$rootScope_;
     $document = _$document_;
+    $window = _$window_;
     dropdownConfig = _dropdownConfig_;
   }));
 
@@ -431,6 +432,42 @@ describe('dropdownToggle', function() {
       clickDropdownToggle(elm2);
       expect(elm1.hasClass(dropdownConfig.openClass)).toBe(false);
       expect(elm2.hasClass(dropdownConfig.openClass)).toBe(true);
+    });
+  });
+
+  describe('dropup', function() {
+    function dropdown() {
+      return $compile('<li dropdown style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu"><li><a href>Hello</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should add "dropup" class if dropdown menu is hidden by browser', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      expect(element.hasClass('dropup')).toBe(true);
+    });
+  });
+
+  describe('dropup for append-to-body', function() {
+    function dropdown() {
+      return $compile('<li dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should place menu above dropdown if it\'s too close to bottom of window', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      var windowBottom = $window.innerHeight + $window.pageYOffset,
+          menu = document.getElementById("dropdown-menu"),
+          menuOffet = parseInt(menu.style.top),
+          menuHeight = menu.getBoundingClientRect().bottom;
+      expect(menuOffet + menuHeight < windowBottom).toBe(true);
     });
   });
 });
