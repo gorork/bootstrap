@@ -521,7 +521,7 @@ describe('dropdownToggle', function() {
       $document.find('body').append(element);
       clickDropdownToggle();
       var windowBottom = $window.innerHeight + $window.pageYOffset,
-          menu = document.getElementById("dropdown-menu"),
+          menu = document.getElementById('dropdown-menu'),
           menuOffet = parseInt(menu.style.top),
           menuHeight = menu.getBoundingClientRect().bottom;
       expect(menuOffet + menuHeight < windowBottom).toBe(true);
