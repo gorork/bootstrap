@@ -163,11 +163,14 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
       }
       dropdownCtrl.dropdownMenu = element;
 
-      var dropdownMenu = element,
-          dropdown = element.parent(),
-          appendToBody = dropdown.attr('dropdown-append-to-body');
+      var dropdown, appendToBody,
+          dropdownMenu = element;
 
       scope.$watch(dropdownCtrl.isOpen, function( isOpen ) {
+
+        dropdown = dropdownCtrl.$element;
+        appendToBody = dropdown.attr('dropdown-append-to-body');
+
         if ( isOpen ) {
 
           // Add invisible dropdownMenu to DOM to calculate its height

@@ -508,6 +508,22 @@ describe('dropdownToggle', function() {
     });
   });
 
+  describe('dropup for not immediate parent', function() {
+    function dropdown() {
+      return $compile('<li dropdown style="position:absolute;bottom:0;"><div><a href dropdown-toggle></a><ul class="dropdown-menu"><li><a href>Hello</a></li></ul></div></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should add "dropup" class to dropdown element, even if it is not an immediate parent', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      expect(element.hasClass('dropup')).toBe(true);
+    });
+  });
+
   describe('dropup for append-to-body', function() {
     function dropdown() {
       return $compile('<li dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
