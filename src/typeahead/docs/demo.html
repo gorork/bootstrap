@@ -35,6 +35,6 @@
     <input type="text" ng-model="customSelected" placeholder="Custom template" typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" typeahead-template-url="customTemplate.html" class="form-control">
 
     <h4>Custom class for append-to-body popup</h4>
-    <pre>Model: {{customSelected | json}}</pre>
-    <input type="text" ng-model="customSelected" typeahead-append-to-body="true" typeahead-dropdown-custom-class="demo-class" placeholder="Custom class" typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" class="form-control">
+    <pre>Model: {{customClassSelected | json}}</pre>
+    <input type="text" ng-model="customClassSelected" typeahead-append-to-body="true" typeahead-dropdown-custom-class="demo-class" placeholder="Custom class" typeahead="state as state.name for state in statesWithFlags | filter:{name:$viewValue}" class="form-control">
 </div>
