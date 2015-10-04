@@ -78,6 +78,7 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
     selectedOption = null;
 
 
+  self.element = $element;
   $element.addClass('dropdown');
 
   this.init = function() {
@@ -166,24 +167,6 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
   };
 
   scope.$watch('isOpen', function(isOpen, wasOpen) {
-    if (appendToBody && self.dropdownMenu) {
-      var pos = $position.positionElements($element, self.dropdownMenu, 'bottom-left', true);
-      var css = {
-        top: pos.top + 'px',
-        display: isOpen ? 'block' : 'none'
-      };
-
-      var rightalign = self.dropdownMenu.hasClass('dropdown-menu-right');
-      if (!rightalign) {
-        css.left = pos.left + 'px';
-        css.right = 'auto';
-      } else {
-        css.left = 'auto';
-        css.right = (window.innerWidth - (pos.left + $element.prop('offsetWidth'))) + 'px';
-      }
-
-      self.dropdownMenu.css(css);
-    }
 
     $animate[isOpen ? 'addClass' : 'removeClass']($element, openClass).then(function() {
       if (angular.isDefined(isOpen) && isOpen !== wasOpen) {
@@ -245,7 +228,7 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
   };
 })
 
-.directive('uibDropdownMenu', function() {
+.directive('uibDropdownMenu', ['$window', '$position', function($window, $position) {
   return {
     restrict: 'AC',
     require: '?^uibDropdown',
@@ -264,9 +247,57 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.position'])
       if (!dropdownCtrl.dropdownMenu) {
         dropdownCtrl.dropdownMenu = element;
       }
+
+      var dropdown, appendToBody,
+          dropdownMenu = element;
+
+      scope.$watch(dropdownCtrl.isOpen, function( isOpen ) {
+
+        dropdown = dropdownCtrl.element;
+        appendToBody = dropdown.attr('dropdown-append-to-body');
+
+        if ( isOpen ) {
+
+          // Add invisible dropdownMenu to DOM to calculate its height
+          dropdownMenu.css({
+            visibility: 'hidden',
+            display:    'block'
+          });
+
+          var windowBottom = $window.innerHeight + $window.pageYOffset,
+              dropdownOffset = $position.offset(dropdown).top,
+              dropdownHeight = $position.position(dropdown).height,
+              dropdownMenuHeight = $position.position(dropdownMenu).height,
+              dropdownMenuBottom = dropdownOffset + dropdownHeight + dropdownMenuHeight;
+
+          if ( appendToBody !== undefined ) {
+            var pos = $position.positionElements(dropdown, dropdownMenu, 'bottom-left', true);
+            var rightAlign = dropdownMenu.hasClass('dropdown-menu-right');
+
+            dropdownMenu.css({
+              top:   dropdownMenuBottom > windowBottom ? dropdownOffset - dropdownMenuHeight - 3 + 'px' : pos.top + 'px',
+              left:  !rightAlign ? pos.left + 'px' : 'auto',
+              right: !rightAlign ? 'auto' : ($window.innerWidth - (pos.left + dropdownMenu.prop('offsetWidth'))) + 'px'
+            });
+
+          } else {
+            dropdown[ dropdownMenuBottom > windowBottom ? 'addClass' : 'removeClass' ]( 'dropup' );
+          }
+
+          // Now, display dropdownMenu
+          dropdownMenu.css('visibility', 'visible');
+
+        } else {
+          // When dropdownMenu is closed, remove inline styling
+          dropdownMenu.css({
+            visibility: '',
+            display:    ''
+          });
+        }
+      });
     }
   };
-})
+}])
 
 .directive('uibKeyboardNav', function() {
   return {

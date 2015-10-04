@@ -1,10 +1,10 @@
 describe('dropdownToggle', function() {
-  var $animate, $compile, $rootScope, $document, $templateCache, dropdownConfig, element, $browser, $log;
+  var $animate, $compile, $rootScope, $document, $window, $templateCache, dropdownConfig, element, $browser, $log;
 
   beforeEach(module('ngAnimateMock'));
   beforeEach(module('ui.bootstrap.dropdown'));
 
-  beforeEach(inject(function(_$animate_, _$compile_, _$rootScope_, _$document_, _$templateCache_, uibDropdownConfig, _$browser_, _$log_) {
+  beforeEach(inject(function(_$animate_, _$compile_, _$rootScope_, _$document_, _$window_, _$templateCache_, uibDropdownConfig, _$browser_, _$log_) {
     $animate = _$animate_;
     $compile = _$compile_;
     $rootScope = _$rootScope_;
@@ -13,6 +13,7 @@ describe('dropdownToggle', function() {
     dropdownConfig = uibDropdownConfig;
     $browser = _$browser_;
     $log = _$log_;
+    $window = _$window_;
   }));
 
   afterEach(function() {
@@ -682,6 +683,58 @@ describe('dropdownToggle', function() {
       var elem2 = elem1.find('a');
       var focusEl = $document.find('ul').eq(0).find('a').eq(1);
       expect(isFocused(focusEl)).toBe(true);
+    });
+  });
+
+  describe('dropup', function() {
+    function dropdown() {
+      return $compile('<li uib-dropdown style="position:absolute;bottom:0;"><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu"><li><a href>Hello</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should add "dropup" class if dropdown menu is hidden by browser', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      expect(element.hasClass('dropup')).toBe(true);
+    });
+  });
+
+  describe('dropup for not immediate parent', function() {
+    function dropdown() {
+      return $compile('<li uib-dropdown style="position:absolute;bottom:0;"><div><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu"><li><a href>Hello</a></li></ul></div></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should add "dropup" class to dropdown element, even if it is not an immediate parent', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      expect(element.hasClass('dropup')).toBe(true);
+    });
+  });
+
+  describe('dropup for append-to-body', function() {
+    function dropdown() {
+      return $compile('<li uib-dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
+    }
+
+    beforeEach(function() {
+      element = dropdown();
+    });
+
+    it('should place menu above dropdown if it\'s too close to bottom of window', function() {
+      $document.find('body').append(element);
+      clickDropdownToggle();
+      var windowBottom = $window.innerHeight + $window.pageYOffset,
+        menu = document.getElementById('dropdown-menu'),
+        menuOffet = parseInt(menu.style.top),
+        menuHeight = menu.getBoundingClientRect().bottom;
+      expect(menuOffet + menuHeight < windowBottom).toBe(true);
     });
   });
 });
