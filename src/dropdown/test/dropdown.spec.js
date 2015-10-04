@@ -490,11 +490,21 @@ describe('dropdownToggle', function() {
       expect(elm1.hasClass(dropdownConfig.openClass)).toBe(false);
       expect(elm2.hasClass(dropdownConfig.openClass)).toBe(true);
     });
+
+    it('should not close on $locationChangeSuccess if auto-close="disabled"', function() {
+      var elm1 = dropdown('disabled');
+      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(false);
+      clickDropdownToggle(elm1);
+      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(true);
+      $rootScope.$broadcast('$locationChangeSuccess');
+      $rootScope.$digest();
+      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(true);
+    });
   });
 
   describe('dropup', function() {
     function dropdown() {
-      return $compile('<li dropdown style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu"><li><a href>Hello</a></li></ul></li>')($rootScope);
+      return $compile('<li uib-dropdown style="position:absolute;bottom:0;"><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu"><li><a href>Hello</a></li></ul></li>')($rootScope);
     }
 
     beforeEach(function() {
@@ -510,7 +520,7 @@ describe('dropdownToggle', function() {
 
   describe('dropup for not immediate parent', function() {
     function dropdown() {
-      return $compile('<li dropdown style="position:absolute;bottom:0;"><div><a href dropdown-toggle></a><ul class="dropdown-menu"><li><a href>Hello</a></li></ul></div></li>')($rootScope);
+      return $compile('<li uib-dropdown style="position:absolute;bottom:0;"><div><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu"><li><a href>Hello</a></li></ul></div></li>')($rootScope);
     }
 
     beforeEach(function() {
@@ -526,7 +536,7 @@ describe('dropdownToggle', function() {
 
   describe('dropup for append-to-body', function() {
     function dropdown() {
-      return $compile('<li dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href dropdown-toggle></a><ul class="dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
+      return $compile('<li uib-dropdown dropdown-append-to-body style="position:absolute;bottom:0;"><a href uib-dropdown-toggle></a><ul class="uib-dropdown-menu" id="dropdown-menu"><li><a href>Hello On Body</a></li></ul></li>')($rootScope);
     }
 
     beforeEach(function() {
@@ -537,21 +547,10 @@ describe('dropdownToggle', function() {
       $document.find('body').append(element);
       clickDropdownToggle();
       var windowBottom = $window.innerHeight + $window.pageYOffset,
-          menu = document.getElementById('dropdown-menu'),
-          menuOffet = parseInt(menu.style.top),
-          menuHeight = menu.getBoundingClientRect().bottom;
+        menu = document.getElementById('dropdown-menu'),
+        menuOffet = parseInt(menu.style.top),
+        menuHeight = menu.getBoundingClientRect().bottom;
       expect(menuOffet + menuHeight < windowBottom).toBe(true);
-    });
-  });
-
-    it('should not close on $locationChangeSuccess if auto-close="disabled"', function() {
-      var elm1 = dropdown('disabled');
-      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(false);
-      clickDropdownToggle(elm1);
-      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(true);
-      $rootScope.$broadcast('$locationChangeSuccess');
-      $rootScope.$digest();
-      expect(elm1.hasClass(dropdownConfig.openClass)).toBe(true);
     });
   });
 
